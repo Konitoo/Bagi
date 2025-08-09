@@ -295,22 +295,15 @@
         arr.push({ score: s, at: Date.now(), name });
         arr.sort((a,b) => b.score - a.score);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0, 20)));
-        // submit to global board (fire and forget)
-        submitGlobalScore(name, s).catch(()=>{});
+        // local scores only for now
       }
       function bestScore() { const arr = loadScores(); return arr.length ? arr[0].score : 0; }
-      async function renderScoreLists() {
+      function renderScoreLists() {
         const arr = loadScores();
         const top = arr.slice(0, 8);
         const asHtml = top.map((r,i) => `<div class="row"><div>#${i+1}</div><div>${r.name || 'Player'}</div><div>${r.score}</div></div>`).join('') || '<div class="row">No scores yet</div>';
-        ui.listMenu.innerHTML = '<h4>Highscores (this device)</h4>' + asHtml;
-        // fetch global highscores
-        const global = await fetchGlobalScores().catch(()=>null);
-        let gHtml = '<div class="row">No global scores yet</div>';
-        if (global && Array.isArray(global) && global.length) {
-          gHtml = global.slice(0,8).map((r,i)=> `<div class="row"><div>#${i+1}</div><div>${escapeHtml(r.name || 'Player')}</div><div>${r.score|0}</div></div>`).join('');
-        }
-        ui.listEnd.innerHTML = '<h4>Global Highscores</h4>' + gHtml;
+        ui.listMenu.innerHTML = '<h4>Highscores</h4>' + asHtml;
+        ui.listEnd.innerHTML = '<h4>Highscores</h4>' + asHtml;
         ui.best.textContent = 'Best: ' + bestScore();
       }
 
@@ -401,12 +394,12 @@
         document.getElementById('touch').style.display = '';
         state = State.PLAY;
       }
-      async function gotoMenu() {
-        state = State.MENU; await renderScoreLists(); ui.menu.style.display = '';
+      function gotoMenu() {
+        state = State.MENU; renderScoreLists(); ui.menu.style.display = '';
         ui.over.style.display = 'none'; document.getElementById('touch').style.display = '';
       }
-      async function endGame() {
-        state = State.OVER; saveScore(Math.floor(score)); await renderScoreLists();
+      function endGame() {
+        state = State.OVER; saveScore(Math.floor(score)); renderScoreLists();
         ui.final.textContent = 'Score: ' + Math.floor(score);
         ui.over.style.display = '';
         document.getElementById('touch').style.display = 'none';
