@@ -228,9 +228,45 @@
       const UP_KEYS = { player: 'bagjump.img.player', enemy1: 'bagjump.img.enemy1', enemy2: 'bagjump.img.enemy2' };
       function fromLS(key) { try { return localStorage.getItem(key); } catch { return null; } }
       const lsPlayer = fromLS(UP_KEYS.player), lsE1 = fromLS(UP_KEYS.enemy1), lsE2 = fromLS(UP_KEYS.enemy2);
-      loadAny([lsPlayer, './Spieler.png', './Spieler.jpg', 'Spieler.png', 'player.png', 'player.jpg'].filter(Boolean), (img)=> assets.player = img);
-      loadAny([lsE1, './Gegner1.jpg', './Gegner1.png', 'Gegner1.jpg', 'enemy1.png', 'enemy1.jpg'].filter(Boolean), (img)=> assets.enemy1 = img);
-      loadAny([lsE2, './Gegner2.jpg', './Genger2.jpg', 'Gegner2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean), (img)=> assets.enemy2 = img);
+      
+      // Load images with better error handling and retry logic
+      function loadPlayerImage() {
+        const urls = [lsPlayer, './Spieler.png', './Spieler.jpg', 'Spieler.png', 'player.png', 'player.jpg'].filter(Boolean);
+        loadAny(urls, (img) => {
+          assets.player = img;
+          console.log('Player image loaded:', img ? 'success' : 'fallback');
+        });
+      }
+      
+      function loadEnemyImages() {
+        const urls1 = [lsE1, './Gegner1.jpg', './Gegner1.png', 'Gegner1.jpg', 'enemy1.png', 'enemy1.jpg'].filter(Boolean);
+        const urls2 = [lsE2, './Gegner2.jpg', './Genger2.jpg', 'Gegner2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean);
+        
+        loadAny(urls1, (img) => {
+          assets.enemy1 = img;
+          console.log('Enemy1 image loaded:', img ? 'success' : 'fallback');
+        });
+        loadAny(urls2, (img) => {
+          assets.enemy2 = img;
+          console.log('Enemy2 image loaded:', img ? 'success' : 'fallback');
+        });
+      }
+      
+      // Load images with retry
+      loadPlayerImage();
+      loadEnemyImages();
+      
+      // Retry loading if images fail after 2 seconds
+      setTimeout(() => {
+        if (!assets.player) {
+          console.log('Retrying player image load...');
+          loadPlayerImage();
+        }
+        if (!assets.enemy1 || !assets.enemy2) {
+          console.log('Retrying enemy image load...');
+          loadEnemyImages();
+        }
+      }, 2000);
 
       // Input
       const keys = new Set();
@@ -295,15 +331,30 @@
         arr.push({ score: s, at: Date.now(), name });
         arr.sort((a,b) => b.score - a.score);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0, 20)));
-        // local scores only for now
+        // submit to global board (fire and forget)
+        submitGlobalScore(name, s).catch(()=>{});
       }
       function bestScore() { const arr = loadScores(); return arr.length ? arr[0].score : 0; }
-      function renderScoreLists() {
+      async function renderScoreLists() {
         const arr = loadScores();
         const top = arr.slice(0, 8);
         const asHtml = top.map((r,i) => `<div class="row"><div>#${i+1}</div><div>${r.name || 'Player'}</div><div>${r.score}</div></div>`).join('') || '<div class="row">No scores yet</div>';
-        ui.listMenu.innerHTML = '<h4>Highscores</h4>' + asHtml;
-        ui.listEnd.innerHTML = '<h4>Highscores</h4>' + asHtml;
+        ui.listMenu.innerHTML = '<h4>Local Highscores</h4>' + asHtml;
+        
+        // Fetch global highscores
+        try {
+          const global = await fetchGlobalScores();
+          let gHtml = '<div class="row">Loading global scores...</div>';
+          if (global && Array.isArray(global) && global.length) {
+            gHtml = global.slice(0,8).map((r,i)=> `<div class="row"><div>#${i+1}</div><div>${escapeHtml(r.name || 'Player')}</div><div>${r.score|0}</div></div>`).join('');
+          } else {
+            gHtml = '<div class="row">No global scores yet</div>';
+          }
+          ui.listEnd.innerHTML = '<h4>Global Highscores</h4>' + gHtml;
+        } catch (error) {
+          ui.listEnd.innerHTML = '<h4>Global Highscores</h4><div class="row">Failed to load</div>';
+        }
+        
         ui.best.textContent = 'Best: ' + bestScore();
       }
 
@@ -394,12 +445,12 @@
         document.getElementById('touch').style.display = '';
         state = State.PLAY;
       }
-      function gotoMenu() {
-        state = State.MENU; renderScoreLists(); ui.menu.style.display = '';
+      async function gotoMenu() {
+        state = State.MENU; await renderScoreLists(); ui.menu.style.display = '';
         ui.over.style.display = 'none'; document.getElementById('touch').style.display = '';
       }
-      function endGame() {
-        state = State.OVER; saveScore(Math.floor(score)); renderScoreLists();
+      async function endGame() {
+        state = State.OVER; saveScore(Math.floor(score)); await renderScoreLists();
         ui.final.textContent = 'Score: ' + Math.floor(score);
         ui.over.style.display = '';
         document.getElementById('touch').style.display = 'none';
