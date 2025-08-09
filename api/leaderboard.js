@@ -1,44 +1,17 @@
 // Vercel serverless function for global leaderboard
-// Option 1: Simple JSON file storage (for demo)
-// Option 2: Upstash Redis (recommended for production)
+// Simple in-memory storage for demo (resets on server restart)
+// For production, use Upstash Redis or similar
 
-import fs from 'fs';
-import path from 'path';
+let leaderboard = [];
 
-const LEADERBOARD_FILE = path.join(process.cwd(), 'data', 'leaderboard.json');
-
-// Ensure data directory exists
-function ensureDataDir() {
-  const dataDir = path.dirname(LEADERBOARD_FILE);
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-// Load leaderboard data
+// Simple in-memory functions
 function loadLeaderboard() {
-  try {
-    ensureDataDir();
-    if (fs.existsSync(LEADERBOARD_FILE)) {
-      const data = fs.readFileSync(LEADERBOARD_FILE, 'utf8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error loading leaderboard:', error);
-  }
-  return [];
+  return leaderboard;
 }
 
-// Save leaderboard data
 function saveLeaderboard(scores) {
-  try {
-    ensureDataDir();
-    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(scores, null, 2));
-    return true;
-  } catch (error) {
-    console.error('Error saving leaderboard:', error);
-    return false;
-  }
+  leaderboard = scores;
+  return true;
 }
 
 // Sanitize input

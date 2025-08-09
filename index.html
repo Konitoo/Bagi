@@ -229,28 +229,28 @@
       function fromLS(key) { try { return localStorage.getItem(key); } catch { return null; } }
       const lsPlayer = fromLS(UP_KEYS.player), lsE1 = fromLS(UP_KEYS.enemy1), lsE2 = fromLS(UP_KEYS.enemy2);
       
-      // Load images with better error handling and retry logic
-      function loadPlayerImage() {
-        const urls = [lsPlayer, './Spieler.png', './Spieler.jpg', 'Spieler.png', 'player.png', 'player.jpg'].filter(Boolean);
-        loadAny(urls, (img) => {
-          assets.player = img;
-          console.log('Player image loaded:', img ? 'success' : 'fallback');
-        });
-      }
-      
-      function loadEnemyImages() {
-        const urls1 = [lsE1, './Gegner1.jpg', './Gegner1.png', 'Gegner1.jpg', 'enemy1.png', 'enemy1.jpg'].filter(Boolean);
-        const urls2 = [lsE2, './Gegner2.jpg', './Genger2.jpg', 'Gegner2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean);
-        
-        loadAny(urls1, (img) => {
-          assets.enemy1 = img;
-          console.log('Enemy1 image loaded:', img ? 'success' : 'fallback');
-        });
-        loadAny(urls2, (img) => {
-          assets.enemy2 = img;
-          console.log('Enemy2 image loaded:', img ? 'success' : 'fallback');
-        });
-      }
+             // Load images with better error handling and retry logic
+       function loadPlayerImage() {
+         const urls = [lsPlayer, 'Spieler.png', 'Spieler.jpg', './Spieler.png', './Spieler.jpg', 'player.png', 'player.jpg'].filter(Boolean);
+         loadAny(urls, (img) => {
+           assets.player = img;
+           console.log('Player image loaded:', img ? 'success' : 'fallback');
+         });
+       }
+       
+       function loadEnemyImages() {
+         const urls1 = [lsE1, 'Gegner1.jpg', 'Gegner1.png', './Gegner1.jpg', './Gegner1.png', 'enemy1.png', 'enemy1.jpg'].filter(Boolean);
+         const urls2 = [lsE2, 'Gegner2.jpg', 'Genger2.jpg', './Gegner2.jpg', './Genger2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean);
+         
+         loadAny(urls1, (img) => {
+           assets.enemy1 = img;
+           console.log('Enemy1 image loaded:', img ? 'success' : 'fallback');
+         });
+         loadAny(urls2, (img) => {
+           assets.enemy2 = img;
+           console.log('Enemy2 image loaded:', img ? 'success' : 'fallback');
+         });
+       }
       
       // Load images with retry
       loadPlayerImage();
@@ -270,11 +270,13 @@
 
       // Input
       const keys = new Set();
-      document.addEventListener('keydown', (e) => {
-        if (['ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'a', 'A', 'd', 'D', 'p', 'P'].includes(e.key)) e.preventDefault();
-        if (e.key === 'p' || e.key === 'P') togglePause();
-        keys.add(e.key);
-      });
+             document.addEventListener('keydown', (e) => {
+         // Only prevent default for game controls, not when typing in input fields
+         if (e.target.tagName === 'INPUT') return;
+         if (['ArrowLeft', 'ArrowRight', ' ', 'Spacebar', 'a', 'A', 'd', 'D', 'p', 'P'].includes(e.key)) e.preventDefault();
+         if (e.key === 'p' || e.key === 'P') togglePause();
+         keys.add(e.key);
+       });
       document.addEventListener('keyup', (e) => { keys.delete(e.key); });
       canvas.addEventListener('pointerdown', () => { if (state === State.PLAY) shoot(); });
 
@@ -420,8 +422,8 @@
         if (Math.random() < 0.06) addRocket(x + w/2 - 14, y - 24);
       }
 
-      // Rocket power-up
-      const rocketImg = new Image(); rocketImg.src = './Rakete.png';
+             // Rocket power-up
+       const rocketImg = new Image(); rocketImg.src = 'Rakete.png';
       function addRocket(x, y) { powerups.push({ type: 'rocket', x, y, w: 38, h: 38, taken: false }); }
 
       function addEnemy(y) {
