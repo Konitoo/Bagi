@@ -233,8 +233,12 @@
        function loadPlayerImage() {
          const urls = [lsPlayer, 'Spieler.png', 'Spieler.jpg', './Spieler.png', './Spieler.jpg', 'player.png', 'player.jpg'].filter(Boolean);
          loadAny(urls, (img) => {
-           assets.player = img;
-           console.log('Player image loaded:', img ? 'success' : 'fallback');
+           if (img && img.complete && img.naturalWidth > 0) {
+             assets.player = img;
+             console.log('Player image loaded: success');
+           } else {
+             console.log('Player image loaded: fallback');
+           }
          });
        }
        
@@ -243,30 +247,50 @@
          const urls2 = [lsE2, 'Gegner2.jpg', 'Genger2.jpg', './Gegner2.jpg', './Genger2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean);
          
          loadAny(urls1, (img) => {
-           assets.enemy1 = img;
-           console.log('Enemy1 image loaded:', img ? 'success' : 'fallback');
+           if (img && img.complete && img.naturalWidth > 0) {
+             assets.enemy1 = img;
+             console.log('Enemy1 image loaded: success');
+           } else {
+             console.log('Enemy1 image loaded: fallback');
+           }
          });
          loadAny(urls2, (img) => {
-           assets.enemy2 = img;
-           console.log('Enemy2 image loaded:', img ? 'success' : 'fallback');
+           if (img && img.complete && img.naturalWidth > 0) {
+             assets.enemy2 = img;
+             console.log('Enemy2 image loaded: success');
+           } else {
+             console.log('Enemy2 image loaded: fallback');
+           }
          });
        }
       
-      // Load images with retry
-      loadPlayerImage();
-      loadEnemyImages();
-      
-      // Retry loading if images fail after 2 seconds
-      setTimeout(() => {
-        if (!assets.player) {
-          console.log('Retrying player image load...');
-          loadPlayerImage();
-        }
-        if (!assets.enemy1 || !assets.enemy2) {
-          console.log('Retrying enemy image load...');
-          loadEnemyImages();
-        }
-      }, 2000);
+             // Load images with retry
+       loadPlayerImage();
+       loadEnemyImages();
+       
+       // Retry loading if images fail after 2 seconds
+       setTimeout(() => {
+         if (!assets.player) {
+           console.log('Retrying player image load...');
+           loadPlayerImage();
+         }
+         if (!assets.enemy1 || !assets.enemy2) {
+           console.log('Retrying enemy image load...');
+           loadEnemyImages();
+         }
+       }, 2000);
+       
+       // Additional retry after 5 seconds
+       setTimeout(() => {
+         if (!assets.player) {
+           console.log('Final retry player image load...');
+           loadPlayerImage();
+         }
+         if (!assets.enemy1 || !assets.enemy2) {
+           console.log('Final retry enemy image load...');
+           loadEnemyImages();
+         }
+       }, 5000);
 
       // Input
       const keys = new Set();
@@ -677,50 +701,50 @@
         if (p.broken) { ctx.strokeStyle = 'rgba(0,0,0,.5)'; ctx.beginPath(); ctx.moveTo(x+4,y+3); ctx.lineTo(x+w-4,y+h-3); ctx.moveTo(x+w-4,y+3); ctx.lineTo(x+4,y+h-3); ctx.stroke(); }
       }
 
-      function drawEnemy(e) {
-        const img = assets[e.sprite];
-        if (img) {
-          ctx.drawImage(img, e.x, e.y, e.w, e.h);
-        } else {
-          // fallback: neon slime orb (green)
-          const gr = ctx.createRadialGradient(e.x + e.w/2, e.y + e.h/2, 6, e.x + e.w/2, e.y + e.h/2, e.w/1.2);
-          gr.addColorStop(0, '#5cffb0'); gr.addColorStop(1, 'rgba(92,255,176,0)');
-          ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(e.x + e.w/2, e.y + e.h/2, e.w/2, 0, Math.PI*2); ctx.fill();
-          ctx.fillStyle = '#00ff99'; ctx.fillRect(e.x+e.w*0.2, e.y+e.h*0.45, e.w*0.6, 6);
-        }
-      }
+             function drawEnemy(e) {
+         const img = assets[e.sprite];
+         if (img && img.complete && img.naturalWidth > 0) {
+           ctx.drawImage(img, e.x, e.y, e.w, e.h);
+         } else {
+           // fallback: neon slime orb (green)
+           const gr = ctx.createRadialGradient(e.x + e.w/2, e.y + e.h/2, 6, e.x + e.w/2, e.y + e.h/2, e.w/1.2);
+           gr.addColorStop(0, '#5cffb0'); gr.addColorStop(1, 'rgba(92,255,176,0)');
+           ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(e.x + e.w/2, e.y + e.h/2, e.w/2, 0, Math.PI*2); ctx.fill();
+           ctx.fillStyle = '#00ff99'; ctx.fillRect(e.x+e.w*0.2, e.y+e.h*0.45, e.w*0.6, 6);
+         }
+       }
 
-      function drawPowerup(pu) {
-        if (pu.type === 'rocket') {
-          if (rocketImg && rocketImg.complete) {
-            ctx.drawImage(rocketImg, pu.x, pu.y, pu.w, pu.h);
-          } else {
-            ctx.fillStyle = '#ffd166';
-            ctx.fillRect(pu.x, pu.y, pu.w, pu.h);
-          }
-        }
-      }
+             function drawPowerup(pu) {
+         if (pu.type === 'rocket') {
+           if (rocketImg && rocketImg.complete && rocketImg.naturalWidth > 0) {
+             ctx.drawImage(rocketImg, pu.x, pu.y, pu.w, pu.h);
+           } else {
+             ctx.fillStyle = '#ffd166';
+             ctx.fillRect(pu.x, pu.y, pu.w, pu.h);
+           }
+         }
+       }
 
-      function drawPlayer() {
-        const x = player.x, y = player.y, w = player.w, h = player.h;
-        if (assets.player) {
-          ctx.drawImage(assets.player, x, y, w, h);
-        } else {
-          // fallback: simple green-toned avatar
-          ctx.save();
-          ctx.translate(x, y);
-          // body
-          roundRect(ctx, 4, 8, w-8, h-12, 8); ctx.fillStyle = '#158a52'; ctx.fill();
-          // visor
-          ctx.fillStyle = '#02130d'; roundRect(ctx, 10, 18, w-20, 16, 6); ctx.fill();
-          ctx.fillStyle = '#e6fff2'; ctx.fillRect(12, 21, w-24, 3);
-          // antenna
-          ctx.fillStyle = '#6bffa6'; ctx.fillRect(w/2-3, 4, 6, 10);
-          // glow
-          ctx.globalAlpha = .2; ctx.fillStyle = '#64ffb8'; ctx.beginPath(); ctx.arc(w/2, h, w*.9, Math.PI, 2*Math.PI); ctx.fill(); ctx.globalAlpha = 1;
-          ctx.restore();
-        }
-      }
+             function drawPlayer() {
+         const x = player.x, y = player.y, w = player.w, h = player.h;
+         if (assets.player && assets.player.complete && assets.player.naturalWidth > 0) {
+           ctx.drawImage(assets.player, x, y, w, h);
+         } else {
+           // fallback: simple green-toned avatar
+           ctx.save();
+           ctx.translate(x, y);
+           // body
+           roundRect(ctx, 4, 8, w-8, h-12, 8); ctx.fillStyle = '#158a52'; ctx.fill();
+           // visor
+           ctx.fillStyle = '#02130d'; roundRect(ctx, 10, 18, w-20, 16, 6); ctx.fill();
+           ctx.fillStyle = '#e6fff2'; ctx.fillRect(12, 21, w-24, 3);
+           // antenna
+           ctx.fillStyle = '#6bffa6'; ctx.fillRect(w/2-3, 4, 6, 10);
+           // glow
+           ctx.globalAlpha = .2; ctx.fillStyle = '#64ffb8'; ctx.beginPath(); ctx.arc(w/2, h, w*.9, Math.PI, 2*Math.PI); ctx.fill(); ctx.globalAlpha = 1;
+           ctx.restore();
+         }
+       }
 
       function roundRect(ctx, x, y, w, h, r) {
         const rr = Math.min(r, w/2, h/2);
