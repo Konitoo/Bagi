@@ -350,16 +350,17 @@
       function loadScores() {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
       }
-      function saveScore(s) {
-        const arr = loadScores();
-        const name = (document.getElementById('playerName')?.value || localStorage.getItem(NAME_KEY) || 'Player').slice(0,18);
-        try { localStorage.setItem(NAME_KEY, name); } catch {}
-        arr.push({ score: s, at: Date.now(), name });
-        arr.sort((a,b) => b.score - a.score);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0, 20)));
-        // submit to global board (fire and forget)
-        submitGlobalScore(name, s).catch(()=>{});
-      }
+             function saveScore(s) {
+         const arr = loadScores();
+         const nameInput = document.getElementById('playerName');
+         const name = (nameInput?.value || localStorage.getItem(NAME_KEY) || 'Player').slice(0,18);
+         try { localStorage.setItem(NAME_KEY, name); } catch {}
+         arr.push({ score: s, at: Date.now(), name });
+         arr.sort((a,b) => b.score - a.score);
+         localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0, 20)));
+         // submit to global board (fire and forget)
+         submitGlobalScore(name, s).catch(()=>{});
+       }
       function bestScore() { const arr = loadScores(); return arr.length ? arr[0].score : 0; }
       async function renderScoreLists() {
         const arr = loadScores();

@@ -5,6 +5,9 @@
     },
     "api/leaderboard-redis.js": {
       "maxDuration": 10
+    },
+    "api/reset-leaderboard.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [
@@ -15,6 +18,10 @@
     {
       "source": "/api/leaderboard-redis",
       "destination": "/api/leaderboard-redis.js"
+    },
+    {
+      "source": "/api/reset-leaderboard",
+      "destination": "/api/reset-leaderboard.js"
     }
   ],
   "env": {

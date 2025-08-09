@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Reset Leaderboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #cc0000; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Reset Global Leaderboard</h1>
+    <p>This will delete ALL global scores. Are you sure?</p>
+    <button onclick="resetLeaderboard()">Reset Leaderboard</button>
+    <div id="result"></div>
+
+    <script>
+        async function resetLeaderboard() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'Resetting...';
+            resultDiv.className = '';
+            
+            try {
+                const response = await fetch('/api/reset-leaderboard', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = '✅ Leaderboard reset successfully!';
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.innerHTML = '❌ Error: ' + (data.error || 'Unknown error');
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '❌ Network error: ' + error.message;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>
