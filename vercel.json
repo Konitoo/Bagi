@@ -18,7 +18,7 @@
     }
   ],
   "env": {
-    "UPSTASH_REDIS_REST_URL": "@upstash-redis-rest-url",
-    "UPSTASH_REDIS_REST_TOKEN": "@upstash-redis-rest-token"
+    "UPSTASH_REDIS_REST_URL": "https://relieved-sawfly-48443.upstash.io",
+    "UPSTASH_REDIS_REST_TOKEN": "Ab07AAIjcDEwZGUzYTExODM0OTQ0NWRmOThjMjU1YjgwMjQ3ZWViY3AxMA"
   }
 }

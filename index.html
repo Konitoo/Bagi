@@ -346,7 +346,7 @@
       // Score persistence
       const STORAGE_KEY = 'bagjump.scores.v1';
       const NAME_KEY = 'bagjump.playerName.v1';
-      const API_BASE = '/api/leaderboard'; // Vercel serverless path
+      const API_BASE = '/api/leaderboard-redis'; // Vercel serverless path
       function loadScores() {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
       }
