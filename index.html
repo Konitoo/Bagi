@@ -205,21 +205,10 @@
       const mctx = matrixCanvas.getContext('2d');
       const canvas = document.getElementById('game');
       const ctx = canvas.getContext('2d');
-      // Render crisp sprites
-      ctx.imageSmoothingEnabled = false;
-      canvas.style.imageRendering = 'pixelated';
-      // Ensure default transform each frame
       function resizeCanvasToDisplaySize() {
-        // Keep internal resolution stable (450x800) for physics; CSS handles display
-        const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-        const w = 450, h = 800;
-        if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-          canvas.width = w * dpr; canvas.height = h * dpr;
-        }
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // keep internal resolution stable (450x800) for physics; CSS handles display
+        // no-op; internal size already set
       }
-      resizeCanvasToDisplaySize();
-      window.addEventListener('resize', resizeCanvasToDisplaySize);
       // Matrix background state
       const matrix = { fontSize: 16, columns: 0, drops: [], chars: 'アイウエオカキクケコサシスセソ0123456789$#*/+<>=-' };
       function resizeMatrix() {
@@ -239,9 +228,9 @@
       const UP_KEYS = { player: 'bagjump.img.player', enemy1: 'bagjump.img.enemy1', enemy2: 'bagjump.img.enemy2' };
       function fromLS(key) { try { return localStorage.getItem(key); } catch { return null; } }
       const lsPlayer = fromLS(UP_KEYS.player), lsE1 = fromLS(UP_KEYS.enemy1), lsE2 = fromLS(UP_KEYS.enemy2);
-      loadAny([lsPlayer, 'Spieler.png', 'player.png', 'player.jpg'].filter(Boolean), (img)=> assets.player = img);
-      loadAny([lsE1, 'Gegner1.jpg', 'enemy1.png', 'enemy1.jpg'].filter(Boolean), (img)=> assets.enemy1 = img);
-      loadAny([lsE2, 'Genger2.jpg', 'Gegner2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean), (img)=> assets.enemy2 = img);
+      loadAny([lsPlayer, './Spieler.png', './Spieler.jpg', 'Spieler.png', 'player.png', 'player.jpg'].filter(Boolean), (img)=> assets.player = img);
+      loadAny([lsE1, './Gegner1.jpg', './Gegner1.png', 'Gegner1.jpg', 'enemy1.png', 'enemy1.jpg'].filter(Boolean), (img)=> assets.enemy1 = img);
+      loadAny([lsE2, './Gegner2.jpg', './Genger2.jpg', 'Gegner2.jpg', 'enemy2.png', 'enemy2.jpg'].filter(Boolean), (img)=> assets.enemy2 = img);
 
       // Input
       const keys = new Set();
@@ -289,7 +278,7 @@
       // Twitter button link - set your profile URL here
       const twitterBtn = document.getElementById('twitterBtn');
       if (twitterBtn) {
-        twitterBtn.href = 'https://twitter.com/'; // TODO: set your handle URL
+        twitterBtn.href = 'https://twitter.com/bagsssss'; // TODO: set your handle URL
       }
 
       // Score persistence
@@ -388,7 +377,7 @@
       }
 
       // Rocket power-up
-      const rocketImg = new Image(); rocketImg.src = 'Rakete.png';
+      const rocketImg = new Image(); rocketImg.src = './Rakete.png';
       function addRocket(x, y) { powerups.push({ type: 'rocket', x, y, w: 38, h: 38, taken: false }); }
 
       function addEnemy(y) {
@@ -558,7 +547,7 @@
           if (pu.type === 'rocket' && !pu.taken) {
             if (rectsOverlap(player, pu)) {
               pu.taken = true; powerups.splice(i,1);
-              player.vy = -2400; // strong boost
+              player.vy = -rand(1000, 2000); // random boost between 1000-2000
               score += 1000; // 1000 points as requested
               SFX.beep(900, .06, 'sawtooth', .05);
               SFX.beep(600, .12, 'sawtooth', .05);
@@ -571,11 +560,8 @@
 
       function draw() {
         const w = canvas.width, h = canvas.height;
-        ctx.setTransform(1,0,0,1,0,0); // clear in device pixels
         // sky background, black-green theme
         ctx.clearRect(0, 0, w, h);
-        const dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
-        ctx.setTransform(dpr,0,0,dpr,0,0);
         const g = ctx.createLinearGradient(0, 0, 0, h);
         g.addColorStop(0, '#00190f'); g.addColorStop(1, '#000904');
         ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
