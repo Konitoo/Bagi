@@ -2,12 +2,23 @@
   "functions": {
     "api/leaderboard.js": {
       "maxDuration": 10
+    },
+    "api/leaderboard-redis.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/api/leaderboard",
       "destination": "/api/leaderboard.js"
+    },
+    {
+      "source": "/api/leaderboard-redis",
+      "destination": "/api/leaderboard-redis.js"
     }
-  ]
+  ],
+  "env": {
+    "UPSTASH_REDIS_REST_URL": "@upstash-redis-rest-url",
+    "UPSTASH_REDIS_REST_TOKEN": "@upstash-redis-rest-token"
+  }
 }

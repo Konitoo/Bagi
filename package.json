@@ -1,0 +1,20 @@
+{
+  "name": "bagjump",
+  "version": "1.0.0",
+  "description": "BagJump - A DoodleJump-like game",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step needed'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "@upstash/redis": "^1.28.4"
+  },
+  "devDependencies": {
+    "vercel": "^32.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

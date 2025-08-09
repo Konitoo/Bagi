@@ -1,17 +1,43 @@
 // Vercel serverless function for global leaderboard
-// Simple in-memory storage for demo (resets on server restart)
-// For production, use Upstash Redis or similar
+// Simple JSON file storage for Vercel
 
-let leaderboard = [];
+import fs from 'fs';
+import path from 'path';
 
-// Simple in-memory functions
-function loadLeaderboard() {
-  return leaderboard;
+const LEADERBOARD_FILE = path.join(process.cwd(), 'data', 'leaderboard.json');
+
+// Ensure data directory exists
+function ensureDataDir() {
+  const dataDir = path.dirname(LEADERBOARD_FILE);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
 }
 
+// Load leaderboard data
+function loadLeaderboard() {
+  try {
+    ensureDataDir();
+    if (fs.existsSync(LEADERBOARD_FILE)) {
+      const data = fs.readFileSync(LEADERBOARD_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading leaderboard:', error);
+  }
+  return [];
+}
+
+// Save leaderboard data
 function saveLeaderboard(scores) {
-  leaderboard = scores;
-  return true;
+  try {
+    ensureDataDir();
+    fs.writeFileSync(LEADERBOARD_FILE, JSON.stringify(scores, null, 2));
+    return true;
+  } catch (error) {
+    console.error('Error saving leaderboard:', error);
+    return false;
+  }
 }
 
 // Sanitize input
@@ -55,7 +81,9 @@ export default async function handler(req, res) {
 
       // Save to file
       if (saveLeaderboard(topScores)) {
-        res.status(200).json({ success: true, rank: topScores.findIndex(s => s.name === sanitizedName && s.score === Math.floor(score)) + 1 });
+        const rank = topScores.findIndex(s => s.name === sanitizedName && s.score === Math.floor(score)) + 1;
+        console.log(`New score submitted: ${sanitizedName} - ${score} (rank: ${rank})`);
+        res.status(200).json({ success: true, rank });
       } else {
         res.status(500).json({ error: 'Failed to save score' });
       }
@@ -67,6 +95,7 @@ export default async function handler(req, res) {
     // Get leaderboard
     try {
       const scores = loadLeaderboard();
+      console.log(`Leaderboard requested, returning ${scores.length} scores`);
       res.status(200).json(scores.slice(0, 50)); // Return top 50
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
