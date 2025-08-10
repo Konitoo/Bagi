@@ -26,6 +26,10 @@
     {
       "source": "/api/test",
       "destination": "/api/test.js"
+    },
+    {
+      "source": "/api/simple-leaderboard",
+      "destination": "/api/simple-leaderboard.js"
     }
   ],
   "env": {
