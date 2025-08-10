@@ -54,14 +54,16 @@ export default async function handler(req, res) {
       const sanitizedName = sanitizeName(name);
       const scoreValue = Math.floor(score);
 
+      const memberKey = `${sanitizedName}:${Date.now()}`;
+      
       // Add score to sorted set
-      await redis.zadd(LEADERBOARD_KEY, { score: scoreValue, member: `${sanitizedName}:${Date.now()}` });
+      await redis.zadd(LEADERBOARD_KEY, { score: scoreValue, member: memberKey });
 
       // Keep only top 100 scores
       await redis.zremrangebyrank(LEADERBOARD_KEY, 0, -101);
 
       // Get rank of new score
-      const rank = await redis.zrank(LEADERBOARD_KEY, `${sanitizedName}:${Date.now()}`);
+      const rank = await redis.zrank(LEADERBOARD_KEY, memberKey);
 
       console.log(`New score submitted: ${sanitizedName} - ${scoreValue} (rank: ${rank !== null ? rank + 1 : 'N/A'})`);
       res.status(200).json({ success: true, rank: rank !== null ? rank + 1 : 'N/A' });
@@ -84,15 +86,25 @@ export default async function handler(req, res) {
       // Get top 100 scores in descending order
       const scores = await redis.zrange(LEADERBOARD_KEY, 0, 99, { rev: true, withScores: true });
       
-      const leaderboard = scores.map((score, index) => {
-        const [name] = score.member.split(':');
-        return {
-          rank: index + 1,
-          name: name,
-          score: score.score,
-          timestamp: parseInt(score.member.split(':')[1]) || Date.now()
-        };
-      });
+      console.log('Raw Redis response:', JSON.stringify(scores, null, 2));
+      
+      const leaderboard = [];
+      if (Array.isArray(scores)) {
+        for (let i = 0; i < scores.length; i += 2) {
+          const member = scores[i];
+          const score = scores[i + 1];
+          
+          if (member && typeof member === 'string') {
+            const [name] = member.split(':');
+            leaderboard.push({
+              rank: Math.floor(i / 2) + 1,
+              name: name || 'Player',
+              score: score || 0,
+              timestamp: parseInt(member.split(':')[1]) || Date.now()
+            });
+          }
+        }
+      }
 
       console.log(`Leaderboard requested, returning ${leaderboard.length} scores`);
       res.status(200).json(leaderboard);
