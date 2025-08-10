@@ -41,8 +41,30 @@ export default async function handler(req, res) {
         return;
       }
       
-      // Don't allow RESET as a real player name
-      if (name === 'RESET') {
+      // Special command to clear ALL old leaderboards
+      if (name === 'CLEAR_ALL' && score === 999999999) {
+        const oldKeys = [
+          'bagjump:leaderboard',
+          'bagjump:leaderboard-redis',
+          'bagjump:simple:leaderboard',
+          'bagjump:test:leaderboard'
+        ];
+        
+        for (const key of oldKeys) {
+          try {
+            await redis.del(key);
+            console.log(`Deleted old key: ${key}`);
+          } catch (e) {
+            console.log(`Could not delete ${key}: ${e.message}`);
+          }
+        }
+        
+        res.status(200).json({ success: true, message: 'All old leaderboards cleared' });
+        return;
+      }
+      
+      // Don't allow RESET or CLEAR_ALL as real player names
+      if (name === 'RESET' || name === 'CLEAR_ALL') {
         return res.status(400).json({ error: 'Invalid name' });
       }
       
