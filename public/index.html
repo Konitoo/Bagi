@@ -130,7 +130,6 @@
                                            <div class="btns">
                 <button id="startBtn">Start</button>
                 <button class="secondary" id="muteBtn">Sound On/Off</button>
-                <button class="secondary" id="resetBtn" style="background: linear-gradient(180deg, #ff6b6b, #ff5252); color: white; box-shadow: 0 6px 18px rgba(255,107,107,.32);">Reset Leaderboard</button>
               </div>
               <div class="scores" id="scoreList"></div>
             </div>
@@ -331,15 +330,13 @@
         again: document.getElementById('againBtn'),
         toMenu: document.getElementById('toMenuBtn'),
         resume: document.getElementById('resumeBtn'),
-        mute: document.getElementById('muteBtn'),
-        reset: document.getElementById('resetBtn')
+        mute: document.getElementById('muteBtn')
       };
       ui.start.addEventListener('click', startGame);
       ui.again && ui.again.addEventListener('click', startGame);
       ui.toMenu && ui.toMenu.addEventListener('click', () => gotoMenu());
       ui.resume && ui.resume.addEventListener('click', () => togglePause(true));
       ui.mute && ui.mute.addEventListener('click', () => { muted = !muted; SFX.beep(660, .03); });
-      ui.reset && ui.reset.addEventListener('click', resetLeaderboard);
       // Twitter button link - set your profile URL here
       const twitterBtn = document.getElementById('twitterBtn');
       if (twitterBtn) {
@@ -387,25 +384,24 @@
          return res.json();
        }
        
-       async function resetLeaderboard() {
-         if (confirm('Are you sure you want to reset the global leaderboard? This cannot be undone!')) {
-           try {
-             const res = await fetch(API_BASE, { 
-               method: 'POST', 
-               headers: { 'Content-Type': 'application/json' }, 
-               body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
-             });
-             if (res.ok) {
-               alert('Leaderboard reset successfully!');
-               renderScoreLists(); // Refresh the display
-             } else {
-               alert('Failed to reset leaderboard');
-             }
-           } catch (error) {
-             alert('Error resetting leaderboard: ' + error.message);
-           }
-         }
-       }
+               // Admin function to reset leaderboard (call from browser console)
+        window.resetLeaderboard = async function() {
+          try {
+            const res = await fetch(API_BASE, { 
+              method: 'POST', 
+              headers: { 'Content-Type': 'application/json' }, 
+              body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
+            });
+            if (res.ok) {
+              console.log('✅ Leaderboard reset successfully!');
+              renderScoreLists(); // Refresh the display
+            } else {
+              console.error('❌ Failed to reset leaderboard');
+            }
+          } catch (error) {
+            console.error('❌ Error resetting leaderboard:', error.message);
+          }
+        };
        
 
 
@@ -426,10 +422,15 @@
         enemyChance: 0.0,
       };
 
-      function initWorld() {
-        score = 0; cameraY = 0; lastShotAt = 0; rngSeed = Math.floor(Math.random() * 1e9); nextEnemyScoreAt = 1000;
-        player = { x: canvas.width/2, y: canvas.height - 80, w: 50, h: 58, vx: 0, vy: -800, alive: true };
-        const savedName = localStorage.getItem(NAME_KEY); const nameInput = document.getElementById('playerName'); if (nameInput && savedName) nameInput.value = savedName;
+             function initWorld() {
+         score = 0; cameraY = 0; lastShotAt = 0; rngSeed = Math.floor(Math.random() * 1e9); nextEnemyScoreAt = 1000;
+         player = { x: canvas.width/2, y: canvas.height - 80, w: 50, h: 58, vx: 0, vy: -800, alive: true };
+         // Don't override the name input if user has already typed something
+         const nameInput = document.getElementById('playerName');
+         if (nameInput && !nameInput.value.trim()) {
+           const savedName = localStorage.getItem(NAME_KEY);
+           if (savedName) nameInput.value = savedName;
+         }
         bullets = []; enemies = []; platforms = []; powerups = [];
         // base floor platform
         platforms.push({ x: canvas.width/2 - 40, y: canvas.height - 30, w: 80, type: 'solid', vx: 0, broken: false });
@@ -450,9 +451,9 @@
        // Track if we just got a rocket boost to prevent enemy spam
        let justGotRocketBoost = false;
 
-      function addPlatformRow(y) {
-        const w = rand(60, 110);
-        const x = rand(10, canvas.width - w - 10);
+             function addPlatformRow(y) {
+         const w = rand(80, 120); // Mindestbreite von 60 auf 80 erhöht
+         const x = rand(10, canvas.width - w - 10);
         let type = 'solid';
         if (Math.random() < config.breakPlatformChance) type = 'break';
         else if (Math.random() < config.movingPlatformChance) type = 'move';
@@ -553,9 +554,9 @@
             
             // Check if player is falling onto platform
             if (playerBottomY <= p.y && playerBottomY + player.vy * dt >= p.y) {
-              // Check if player's bottom center is within platform bounds (with some tolerance)
-              const tolerance = 5; // pixels of tolerance
-              if (playerBottomCenterX >= p.x - tolerance && playerBottomCenterX <= p.x + p.w + tolerance) {
+                           // Check if player's bottom center is within platform bounds (with some tolerance)
+             const tolerance = 8; // pixels of tolerance - increased for better landing
+             if (playerBottomCenterX >= p.x - tolerance && playerBottomCenterX <= p.x + p.w + tolerance) {
                 // landed
                 player.y = p.y - player.h; 
                 player.vy = -config.jumpForce; 
@@ -788,9 +789,16 @@
         ctx.closePath();
       }
 
-      // Initial setup
-      renderScoreLists();
-      ui.score.textContent = '0';
+             // Initial setup
+       renderScoreLists();
+       ui.score.textContent = '0';
+       
+       // Load saved name only if input is empty
+       const nameInput = document.getElementById('playerName');
+       if (nameInput && !nameInput.value.trim()) {
+         const savedName = localStorage.getItem(NAME_KEY);
+         if (savedName) nameInput.value = savedName;
+       }
 
       // Accessibility: allow Enter to start when in menu
       document.addEventListener('keydown', e => { if (state === State.MENU && (e.key === 'Enter' || e.key === ' ')) startGame(); });
