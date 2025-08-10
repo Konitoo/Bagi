@@ -61,10 +61,10 @@ export default async function handler(req, res) {
       await redis.zremrangebyrank(LEADERBOARD_KEY, 0, -101);
 
       // Get rank of new score
-      const rank = await redis.zrevrank(LEADERBOARD_KEY, `${sanitizedName}:${Date.now()}`);
+      const rank = await redis.zrank(LEADERBOARD_KEY, `${sanitizedName}:${Date.now()}`);
 
-      console.log(`New score submitted: ${sanitizedName} - ${scoreValue} (rank: ${rank + 1})`);
-      res.status(200).json({ success: true, rank: rank + 1 });
+      console.log(`New score submitted: ${sanitizedName} - ${scoreValue} (rank: ${rank !== null ? rank + 1 : 'N/A'})`);
+      res.status(200).json({ success: true, rank: rank !== null ? rank + 1 : 'N/A' });
 
     } catch (error) {
       console.error('Error submitting score:', error);
@@ -82,7 +82,7 @@ export default async function handler(req, res) {
       }
 
       // Get top 100 scores in descending order
-      const scores = await redis.zrevrange(LEADERBOARD_KEY, 0, 99, { withScores: true });
+      const scores = await redis.zrange(LEADERBOARD_KEY, 0, 99, { rev: true, withScores: true });
       
       const leaderboard = scores.map((score, index) => {
         const [name] = score.member.split(':');
