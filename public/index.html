@@ -457,14 +457,22 @@
         let type = 'solid';
         if (Math.random() < config.breakPlatformChance) type = 'break';
         else if (Math.random() < config.movingPlatformChance) type = 'move';
-                 platforms.push({ x, y, w, type, vx: type==='move' ? rand(40, 80) * (Math.random()<.5?-1:1) : 0, broken: false, willBreak: false });
-                  // occasional rocket spawn on platform line (much rarer)
-          if (Math.random() < 0.02) addRocket(x + w/2 - 19, y - 38);
+                                   platforms.push({ x, y, w, type, vx: type==='move' ? rand(40, 80) * (Math.random()<.5?-1:1) : 0, broken: false, willBreak: false });
+                   // occasional power-up spawn on platform line (rare)
+           if (Math.random() < 0.02) {
+             if (Math.random() < 0.6) {
+               addRocket(x + w/2 - 19, y - 45); // moved up a bit
+             } else {
+               addHat(x + w/2 - 19, y - 45);
+             }
+           }
       }
 
-             // Rocket power-up
-       const rocketImg = new Image(); rocketImg.src = 'rakete.png';
-      function addRocket(x, y) { powerups.push({ type: 'rocket', x, y, w: 38, h: 38, taken: false }); }
+                           // Power-ups
+        const rocketImg = new Image(); rocketImg.src = 'rakete.png';
+        const hatImg = new Image(); hatImg.src = 'hat.png';
+       function addRocket(x, y) { powerups.push({ type: 'rocket', x, y, w: 38, h: 38, taken: false }); }
+       function addHat(x, y) { powerups.push({ type: 'hat', x, y, w: 38, h: 38, taken: false }); }
 
       function addEnemy(y) {
         const size = rand(40, 64);
@@ -645,20 +653,27 @@
         // UI score
         ui.score.textContent = Math.floor(score).toString();
 
-                 // Power-up collisions
-         for (let i = powerups.length - 1; i >= 0; i--) {
-           const pu = powerups[i];
-           if (pu.type === 'rocket' && !pu.taken) {
-             if (rectsOverlap(player, pu)) {
-               pu.taken = true; powerups.splice(i,1);
-               player.vy = -rand(1000, 2000); // random boost between 1000-2000
-               score += 1000; // 1000 points as requested
-               justGotRocketBoost = true; // mark that we just got a rocket boost
-               SFX.beep(900, .06, 'sawtooth', .05);
-               SFX.beep(600, .12, 'sawtooth', .05);
-             }
-           }
-         }
+                                   // Power-up collisions
+          for (let i = powerups.length - 1; i >= 0; i--) {
+            const pu = powerups[i];
+            if (pu.type === 'rocket' && !pu.taken) {
+              if (rectsOverlap(player, pu)) {
+                pu.taken = true; powerups.splice(i,1);
+                player.vy = -rand(1000, 2000); // random boost between 1000-2000
+                score += 1000; // 1000 points as requested
+                justGotRocketBoost = true; // mark that we just got a rocket boost
+                SFX.beep(900, .06, 'sawtooth', .05);
+                SFX.beep(600, .12, 'sawtooth', .05);
+              }
+            } else if (pu.type === 'hat' && !pu.taken) {
+              if (rectsOverlap(player, pu)) {
+                pu.taken = true; powerups.splice(i,1);
+                score += 1000; // 1000 points, no boost
+                SFX.beep(800, .05, 'triangle', .04);
+                SFX.beep(1000, .08, 'triangle', .04);
+              }
+            }
+          }
       }
 
       function minPlatformY() { let m = Infinity; for (const p of platforms) m = Math.min(m, p.y); return m; }
@@ -749,16 +764,23 @@
          }
        }
 
-             function drawPowerup(pu) {
-         if (pu.type === 'rocket') {
-           if (rocketImg && rocketImg.complete && rocketImg.naturalWidth > 0) {
-             ctx.drawImage(rocketImg, pu.x, pu.y, pu.w, pu.h);
-           } else {
-             ctx.fillStyle = '#ffd166';
-             ctx.fillRect(pu.x, pu.y, pu.w, pu.h);
-           }
-         }
-       }
+                           function drawPowerup(pu) {
+          if (pu.type === 'rocket') {
+            if (rocketImg && rocketImg.complete && rocketImg.naturalWidth > 0) {
+              ctx.drawImage(rocketImg, pu.x, pu.y, pu.w, pu.h);
+            } else {
+              ctx.fillStyle = '#ffd166';
+              ctx.fillRect(pu.x, pu.y, pu.w, pu.h);
+            }
+          } else if (pu.type === 'hat') {
+            if (hatImg && hatImg.complete && hatImg.naturalWidth > 0) {
+              ctx.drawImage(hatImg, pu.x, pu.y, pu.w, pu.h);
+            } else {
+              ctx.fillStyle = '#ff6b6b';
+              ctx.fillRect(pu.x, pu.y, pu.w, pu.h);
+            }
+          }
+        }
 
              function drawPlayer() {
          const x = player.x, y = player.y, w = player.w, h = player.h;
