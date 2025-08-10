@@ -1,20 +1,13 @@
 {
   "functions": {
-    "api/leaderboard-redis.js": {
-      "maxDuration": 10
-    },
-    "api/clear-all-leaderboards.js": {
+    "api/leaderboard.js": {
       "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/api/leaderboard",
-      "destination": "/api/leaderboard-redis.js"
+      "destination": "/api/leaderboard.js"
     }
-  ],
-  "env": {
-    "UPSTASH_REDIS_REST_URL": "https://relieved-sawfly-48443.upstash.io",
-    "UPSTASH_REDIS_REST_TOKEN": "Ar07AAIgcDGI-Jte6LTdPN_mCC2f0dUNDpW_AYlYfNgNEBrG-KZUYg"
-  }
+  ]
 }

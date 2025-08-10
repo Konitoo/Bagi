@@ -7,12 +7,9 @@
   "scripts": {
     "dev": "vercel dev",
     "build": "echo 'No build step needed'",
-    "deploy": "vercel --prod",
-    "clear-redis": "node clear-redis.js"
+    "deploy": "vercel --prod"
   },
-  "dependencies": {
-    "@upstash/redis": "^1.28.4"
-  },
+  "dependencies": {},
   "devDependencies": {
     "vercel": "^32.5.0"
   },
