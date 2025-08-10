@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BagJump</title>
+    <title>BagsyJump</title>
     <style>
       :root {
         --bg1: #020a05;
@@ -89,12 +89,12 @@
 
       @media (min-width: 860px) { .touch { display: none; } }
 
-      /* Twitter button (fixed, on matrix background) */
-      .twitter-fixed { position: fixed; top: 14px; right: 16px; width: 52px; height: 52px; border-radius: 50%;
-        background: rgba(0,0,0,.35); display: grid; place-items: center; pointer-events: auto; text-decoration: none;
-        box-shadow: 0 8px 18px rgba(0,0,0,.4), inset 0 0 0 2px rgba(0,255,170,.25); z-index: 3; }
-      .twitter-fixed:hover { background: rgba(0,0,0,.5); box-shadow: 0 8px 18px rgba(0,0,0,.5), inset 0 0 0 2px rgba(0,255,170,.45); }
-      .twitter-fixed span { filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
+             /* Twitter button (above game frame) */
+       .twitter-fixed { position: fixed; top: calc(50% - 500px); left: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; border-radius: 50%;
+         background: rgba(0,0,0,.35); display: grid; place-items: center; pointer-events: auto; text-decoration: none;
+         box-shadow: 0 8px 18px rgba(0,0,0,.4), inset 0 0 0 2px rgba(0,255,170,.25); z-index: 3; }
+       .twitter-fixed:hover { background: rgba(0,0,0,.5); box-shadow: 0 8px 18px rgba(0,0,0,.5), inset 0 0 0 2px rgba(0,255,170,.45); }
+       .twitter-fixed span { filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); }
     </style>
   </head>
   <body>
@@ -108,7 +108,7 @@
     </a>
     <div class="wrap">
       <div class="frame" id="frame">
-        <canvas id="game" width="450" height="800" aria-label="BagJump Spiel" style="position:absolute; inset:0; z-index:1;"></canvas>
+                 <canvas id="game" width="450" height="800" aria-label="BagsyJump Spiel" style="position:absolute; inset:0; z-index:1;"></canvas>
 
         <div class="ui">
           <div class="hud">
@@ -118,7 +118,7 @@
 
           <div class="menu" id="menu">
             <div class="panel">
-              <p class="title">BagJump</p>
+                             <p class="title">BagsyJump</p>
               <p class="subtitle">Jump higher, shoot enemies, and beat the high score. <br><br> <em>The winner takes all Fees</em><br> CA:</p>
               <div style="font-size:14px;opacity:.9;margin-bottom:12px;">
                 Controls: <span class="kbd">A</span>/<span class="kbd">←</span> & <span class="kbd">D</span>/<span class="kbd">→</span> to move, <span class="kbd">Space</span>/<span class="kbd">Click</span> to shoot, <span class="kbd">P</span> pause.
@@ -225,7 +225,7 @@
 
       // Assets: player + two enemies. Load from files if present or from user uploads (stored in localStorage)
       const assets = { player: null, enemy1: null, enemy2: null };
-      const UP_KEYS = { player: 'bagjump.img.player', enemy1: 'bagjump.img.enemy1', enemy2: 'bagjump.img.enemy2' };
+             const UP_KEYS = { player: 'bagsyjump.img.player', enemy1: 'bagsyjump.img.enemy1', enemy2: 'bagsyjump.img.enemy2' };
       function fromLS(key) { try { return localStorage.getItem(key); } catch { return null; } }
       const lsPlayer = fromLS(UP_KEYS.player), lsE1 = fromLS(UP_KEYS.enemy1), lsE2 = fromLS(UP_KEYS.enemy2);
       
@@ -344,7 +344,7 @@
       }
 
       // Score persistence - Global only
-      const NAME_KEY = 'bagjump.playerName.v1';
+             const NAME_KEY = 'bagsyjump.playerName.v1';
       const API_BASE = '/api/leaderboard'; // Redis API
       
       function saveScore(s) {
