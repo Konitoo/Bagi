@@ -665,14 +665,15 @@
                 SFX.beep(900, .06, 'sawtooth', .05);
                 SFX.beep(600, .12, 'sawtooth', .05);
               }
-            } else if (pu.type === 'hat' && !pu.taken) {
-              if (rectsOverlap(player, pu)) {
-                pu.taken = true; powerups.splice(i,1);
-                score += 1000; // 1000 points, no boost
-                SFX.beep(800, .05, 'triangle', .04);
-                SFX.beep(1000, .08, 'triangle', .04);
-              }
-            }
+                         } else if (pu.type === 'hat' && !pu.taken) {
+               if (rectsOverlap(player, pu)) {
+                 pu.taken = true; powerups.splice(i,1);
+                 score += 1000; // 1000 points, no boost
+                 console.log('Hat collected! Score before:', score - 1000, 'Score after:', score);
+                 SFX.beep(800, .05, 'triangle', .04);
+                 SFX.beep(1000, .08, 'triangle', .04);
+               }
+             }
           }
       }
 
