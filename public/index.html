@@ -343,25 +343,6 @@
          twitterBtn.href = 'https://twitter.com/bagsy_jump'; // TODO: set your handle URL
        }
 
-       // Admin function to reset leaderboard (call from browser console)
-       window.resetLeaderboard = async function() {
-         try {
-           const res = await fetch('/api/leaderboard', { 
-             method: 'POST', 
-             headers: { 'Content-Type': 'application/json' }, 
-             body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
-           });
-           if (res.ok) {
-             console.log('✅ Leaderboard reset successfully!');
-             renderScoreLists(); // Refresh the display
-           } else {
-             console.error('❌ Failed to reset leaderboard');
-           }
-         } catch (error) {
-           console.error('❌ Error resetting leaderboard:', error.message);
-         }
-       };
-
       // Score persistence - Global only
              const NAME_KEY = 'bagsyjump.playerName.v1';
       const API_BASE = '/api/leaderboard'; // Redis API
