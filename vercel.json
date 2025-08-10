@@ -22,6 +22,10 @@
     {
       "source": "/api/clear-leaderboard",
       "destination": "/api/clear-leaderboard.js"
+    },
+    {
+      "source": "/api/test",
+      "destination": "/api/test.js"
     }
   ],
   "env": {
