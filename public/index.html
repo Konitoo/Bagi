@@ -337,11 +337,30 @@
       ui.toMenu && ui.toMenu.addEventListener('click', () => gotoMenu());
       ui.resume && ui.resume.addEventListener('click', () => togglePause(true));
       ui.mute && ui.mute.addEventListener('click', () => { muted = !muted; SFX.beep(660, .03); });
-      // Twitter button link - set your profile URL here
-      const twitterBtn = document.getElementById('twitterBtn');
-      if (twitterBtn) {
-        twitterBtn.href = 'https://twitter.com/bagsyjump'; // TODO: set your handle URL
-      }
+             // Twitter button link - set your profile URL here
+       const twitterBtn = document.getElementById('twitterBtn');
+       if (twitterBtn) {
+         twitterBtn.href = 'https://twitter.com/bagsy_jump'; // TODO: set your handle URL
+       }
+
+       // Admin function to reset leaderboard (call from browser console)
+       window.resetLeaderboard = async function() {
+         try {
+           const res = await fetch('/api/leaderboard', { 
+             method: 'POST', 
+             headers: { 'Content-Type': 'application/json' }, 
+             body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
+           });
+           if (res.ok) {
+             console.log('✅ Leaderboard reset successfully!');
+             renderScoreLists(); // Refresh the display
+           } else {
+             console.error('❌ Failed to reset leaderboard');
+           }
+         } catch (error) {
+           console.error('❌ Error resetting leaderboard:', error.message);
+         }
+       };
 
       // Score persistence - Global only
              const NAME_KEY = 'bagsyjump.playerName.v1';
