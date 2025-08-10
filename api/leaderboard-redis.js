@@ -32,6 +32,14 @@ export default async function handler(req, res) {
     try {
       const { name, score } = req.body;
       
+      // Check if this is a reset request
+      if (name === 'RESET' && score === 999999999) {
+        await redis.del(LEADERBOARD_KEY);
+        console.log('Redis leaderboard reset successfully');
+        res.status(200).json({ success: true, message: 'Leaderboard reset' });
+        return;
+      }
+      
       if (!name || typeof score !== 'number' || score < 0) {
         return res.status(400).json({ error: 'Invalid data' });
       }

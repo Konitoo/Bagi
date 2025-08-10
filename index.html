@@ -127,10 +127,11 @@
                 <label for="playerName" style="opacity:.9;">Name:</label>
                 <input id="playerName" type="text" maxlength="18" placeholder="Your name" style="pointer-events:auto;padding:8px 10px;border-radius:10px;border:0;background:rgba(255,255,255,.08);color:var(--fg);min-width:160px;">
               </div>
-              <div class="btns">
-                <button id="startBtn">Start</button>
-                <button class="secondary" id="muteBtn">Sound On/Off</button>
-              </div>
+                             <div class="btns">
+                 <button id="startBtn">Start</button>
+                 <button class="secondary" id="muteBtn">Sound On/Off</button>
+                 <button class="secondary" id="resetBtn" style="background: linear-gradient(180deg, #ff6b6b, #ff5252); color: white;">Reset Global</button>
+               </div>
               <div class="scores" id="scoreList"></div>
             </div>
           </div>
@@ -330,13 +331,15 @@
         again: document.getElementById('againBtn'),
         toMenu: document.getElementById('toMenuBtn'),
         resume: document.getElementById('resumeBtn'),
-        mute: document.getElementById('muteBtn')
+                 mute: document.getElementById('muteBtn'),
+         reset: document.getElementById('resetBtn')
       };
       ui.start.addEventListener('click', startGame);
       ui.again && ui.again.addEventListener('click', startGame);
       ui.toMenu && ui.toMenu.addEventListener('click', () => gotoMenu());
       ui.resume && ui.resume.addEventListener('click', () => togglePause(true));
-      ui.mute && ui.mute.addEventListener('click', () => { muted = !muted; SFX.beep(660, .03); });
+             ui.mute && ui.mute.addEventListener('click', () => { muted = !muted; SFX.beep(660, .03); });
+       ui.reset && ui.reset.addEventListener('click', resetGlobalLeaderboard);
       // Twitter button link - set your profile URL here
       const twitterBtn = document.getElementById('twitterBtn');
       if (twitterBtn) {
@@ -346,7 +349,7 @@
       // Score persistence
       const STORAGE_KEY = 'bagjump.scores.v1';
       const NAME_KEY = 'bagjump.playerName.v1';
-             const API_BASE = '/api/simple-leaderboard'; // Simple API for testing
+             const API_BASE = '/api/leaderboard'; // Redis API
       function loadScores() {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
       }
@@ -392,11 +395,31 @@
         if (!res.ok) throw new Error('submit failed');
         return res.json();
       }
-      async function fetchGlobalScores(){
-        const res = await fetch(API_BASE);
-        if (!res.ok) return null;
-        return res.json();
-      }
+             async function fetchGlobalScores(){
+         const res = await fetch(API_BASE);
+         if (!res.ok) return null;
+         return res.json();
+       }
+       
+       async function resetGlobalLeaderboard(){
+         if (confirm('Are you sure you want to reset ALL global scores? This cannot be undone!')) {
+           try {
+             const res = await fetch(API_BASE, { 
+               method: 'POST', 
+               headers: { 'Content-Type': 'application/json' }, 
+               body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
+             });
+             if (res.ok) {
+               alert('Global leaderboard reset successfully!');
+               renderScoreLists(); // Refresh the display
+             } else {
+               alert('Failed to reset leaderboard');
+             }
+           } catch (error) {
+             alert('Error resetting leaderboard: ' + error.message);
+           }
+         }
+       }
 
       // World objects
       let player, platforms, enemies, bullets, cameraY, score, lastShotAt, rngSeed;
