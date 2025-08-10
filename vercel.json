@@ -2,6 +2,9 @@
   "functions": {
     "api/leaderboard-redis.js": {
       "maxDuration": 10
+    },
+    "api/clear-all-leaderboards.js": {
+      "maxDuration": 10
     }
   },
   "rewrites": [

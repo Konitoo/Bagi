@@ -1,5 +1,5 @@
 // Vercel serverless function for global leaderboard using Upstash Redis
-// More reliable than file storage for production
+// Clean implementation with new Redis key
 
 import { Redis } from '@upstash/redis';
 
@@ -9,7 +9,8 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
 });
 
-const LEADERBOARD_KEY = 'bagjump:leaderboard';
+// Use a completely new key to avoid conflicts
+const LEADERBOARD_KEY = 'bagjump:clean:leaderboard';
 
 // Sanitize input
 function sanitizeName(name) {
@@ -32,36 +33,18 @@ export default async function handler(req, res) {
     try {
       const { name, score } = req.body;
       
-             // Check if this is a reset request
-       if (name === 'RESET' && score === 999999999) {
-         await redis.del(LEADERBOARD_KEY);
-         console.log('Redis leaderboard reset successfully');
-         res.status(200).json({ success: true, message: 'Leaderboard reset' });
-         return;
-       }
-       
-       // Also check for any existing RESET entries and remove them
-       if (name === 'RESET') {
-         // Remove any existing RESET entries from the leaderboard
-         const scores = await redis.zrevrange(LEADERBOARD_KEY, 0, -1, { withScores: true });
-         for (const [data, score] of scores) {
-           try {
-             const parsed = JSON.parse(data);
-             if (parsed.name === 'RESET') {
-               await redis.zrem(LEADERBOARD_KEY, data);
-             }
-           } catch (e) {
-             // ignore parsing errors
-           }
-         }
-         res.status(200).json({ success: true, message: 'RESET entries removed' });
-         return;
-       }
-       
-       // Don't allow RESET as a real player name
-       if (name === 'RESET') {
-         return res.status(400).json({ error: 'Invalid name' });
-       }
+      // Check if this is a reset request
+      if (name === 'RESET' && score === 999999999) {
+        await redis.del(LEADERBOARD_KEY);
+        console.log('Redis leaderboard reset successfully');
+        res.status(200).json({ success: true, message: 'Leaderboard reset' });
+        return;
+      }
+      
+      // Don't allow RESET as a real player name
+      if (name === 'RESET') {
+        return res.status(400).json({ error: 'Invalid name' });
+      }
       
       if (!name || typeof score !== 'number' || score < 0) {
         return res.status(400).json({ error: 'Invalid data' });
