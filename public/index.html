@@ -452,7 +452,7 @@
        let justGotRocketBoost = false;
 
              function addPlatformRow(y) {
-         const w = rand(80, 120); // Mindestbreite von 60 auf 80 erhöht
+         const w = rand(60, 110); // Back to original size
          const x = rand(10, canvas.width - w - 10);
         let type = 'solid';
         if (Math.random() < config.breakPlatformChance) type = 'break';
@@ -543,31 +543,34 @@
           // no intrinsic movement for rocket
         }
 
-        // Collision: player landing on platform (from above only). Break platforms allow one jump, then crumble after takeoff.
-        if (player.vy > 0) {
-          for (const p of platforms) {
-            if (p.broken) continue;
-            
-            // Better hitbox: use bottom center of player for landing detection
-            const playerBottomCenterX = player.x + player.w / 2;
-            const playerBottomY = player.y + player.h;
-            
-            // Check if player is falling onto platform
-            if (playerBottomY <= p.y && playerBottomY + player.vy * dt >= p.y) {
-                           // Check if player's bottom center is within platform bounds (with some tolerance)
-             const tolerance = 8; // pixels of tolerance - increased for better landing
-             if (playerBottomCenterX >= p.x - tolerance && playerBottomCenterX <= p.x + p.w + tolerance) {
-                // landed
-                player.y = p.y - player.h; 
-                player.vy = -config.jumpForce; 
-                SFX.beep(500 + Math.random()*60, .05);
-                if (p.type === 'move') player.x += p.vx * 0.02;
-                // mark break platforms to crumble right after jump
-                if (p.type === 'break') { p.willBreak = true; }
-              }
-            }
-          }
-        }
+                 // Collision: player landing on platform (from above only). Break platforms allow one jump, then crumble after takeoff.
+         if (player.vy > 0) {
+           let landed = false;
+           for (const p of platforms) {
+             if (p.broken || landed) continue;
+             
+             // Better hitbox: use bottom center of player for landing detection
+             const playerBottomCenterX = player.x + player.w / 2;
+             const playerBottomY = player.y + player.h;
+             
+             // Check if player is falling onto platform with more generous detection
+             if (playerBottomY <= p.y + 2 && playerBottomY + player.vy * dt >= p.y - 2) {
+               // Check if player's bottom center is within platform bounds (with some tolerance)
+               const tolerance = 10; // pixels of tolerance - increased for better landing
+               if (playerBottomCenterX >= p.x - tolerance && playerBottomCenterX <= p.x + p.w + tolerance) {
+                 // landed
+                 player.y = p.y - player.h; 
+                 player.vy = -config.jumpForce; 
+                 landed = true; // prevent multiple landings in same frame
+                 SFX.beep(500 + Math.random()*60, .05);
+                 if (p.type === 'move') player.x += p.vx * 0.02;
+                 // mark break platforms to crumble right after jump
+                 if (p.type === 'break') { p.willBreak = true; }
+                 break; // exit loop after landing
+               }
+             }
+           }
+         }
 
         // Apply crumble for break platforms once the player has left them
         for (const p of platforms) {
