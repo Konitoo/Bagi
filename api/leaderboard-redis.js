@@ -1,5 +1,12 @@
 import { Redis } from '@upstash/redis';
 
+// Check if environment variables are set
+if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+  console.error('Missing Redis environment variables');
+  console.error('UPSTASH_REDIS_REST_URL:', process.env.UPSTASH_REDIS_REST_URL ? 'SET' : 'MISSING');
+  console.error('UPSTASH_REDIS_REST_TOKEN:', process.env.UPSTASH_REDIS_REST_TOKEN ? 'SET' : 'MISSING');
+}
+
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL,
   token: process.env.UPSTASH_REDIS_REST_TOKEN,
@@ -65,6 +72,15 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
+      // Check if Redis is configured
+      if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) {
+        console.error('Redis not configured - missing environment variables');
+        return res.status(500).json({ 
+          error: 'Redis not configured',
+          message: 'Please set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN in Vercel environment variables'
+        });
+      }
+
       // Get top 100 scores in descending order
       const scores = await redis.zrevrange(LEADERBOARD_KEY, 0, 99, { withScores: true });
       
@@ -83,7 +99,12 @@ export default async function handler(req, res) {
 
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
-      res.status(500).json({ error: 'Server error' });
+      console.error('Error details:', error.message);
+      res.status(500).json({ 
+        error: 'Server error', 
+        message: error.message,
+        details: 'Check Vercel function logs for more information'
+      });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
