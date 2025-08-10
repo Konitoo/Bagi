@@ -40,6 +40,24 @@ export default async function handler(req, res) {
          return;
        }
        
+       // Also check for any existing RESET entries and remove them
+       if (name === 'RESET') {
+         // Remove any existing RESET entries from the leaderboard
+         const scores = await redis.zrevrange(LEADERBOARD_KEY, 0, -1, { withScores: true });
+         for (const [data, score] of scores) {
+           try {
+             const parsed = JSON.parse(data);
+             if (parsed.name === 'RESET') {
+               await redis.zrem(LEADERBOARD_KEY, data);
+             }
+           } catch (e) {
+             // ignore parsing errors
+           }
+         }
+         res.status(200).json({ success: true, message: 'RESET entries removed' });
+         return;
+       }
+       
        // Don't allow RESET as a real player name
        if (name === 'RESET') {
          return res.status(400).json({ error: 'Invalid name' });
