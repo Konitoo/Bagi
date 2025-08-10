@@ -6,7 +6,7 @@
     "api/leaderboard-redis.js": {
       "maxDuration": 10
     },
-    "api/clear-leaderboard.js": {
+    "api/simple-leaderboard.js": {
       "maxDuration": 10
     }
   },
@@ -20,16 +20,12 @@
       "destination": "/api/leaderboard-redis.js"
     },
     {
-      "source": "/api/clear-leaderboard",
-      "destination": "/api/clear-leaderboard.js"
+      "source": "/api/simple-leaderboard",
+      "destination": "/api/simple-leaderboard.js"
     },
     {
       "source": "/api/test",
       "destination": "/api/test.js"
-    },
-    {
-      "source": "/api/simple-leaderboard",
-      "destination": "/api/simple-leaderboard.js"
     }
   ],
   "env": {
