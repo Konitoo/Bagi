@@ -1,13 +1,13 @@
 {
   "functions": {
-    "api/leaderboard.js": {
+    "api/leaderboard-redis.js": {
       "maxDuration": 10
     }
   },
   "rewrites": [
     {
       "source": "/api/leaderboard",
-      "destination": "/api/leaderboard.js"
+      "destination": "/api/leaderboard-redis.js"
     }
   ]
 }

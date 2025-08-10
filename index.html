@@ -151,7 +151,7 @@
                 <button id="againBtn">Retry</button>
                 <button class="secondary" id="toMenuBtn">Menu</button>
               </div>
-              <div class="scores" id="scoreListEnd"></div>
+
             </div>
           </div>
 
@@ -325,7 +325,7 @@
         over: document.getElementById('gameover'),
         final: document.getElementById('finalScore'),
         listMenu: document.getElementById('scoreList'),
-        listEnd: document.getElementById('scoreListEnd'),
+
         start: document.getElementById('startBtn'),
         again: document.getElementById('againBtn'),
         toMenu: document.getElementById('toMenuBtn'),
@@ -343,32 +343,20 @@
         twitterBtn.href = 'https://twitter.com/bagsssss'; // TODO: set your handle URL
       }
 
-      // Score persistence
-      const STORAGE_KEY = 'bagjump.scores.v1';
+      // Score persistence - Global only
       const NAME_KEY = 'bagjump.playerName.v1';
-             const API_BASE = '/api/leaderboard'; // Redis API
-      function loadScores() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+      const API_BASE = '/api/leaderboard'; // Redis API
+      
+      function saveScore(s) {
+        const nameInput = document.getElementById('playerName');
+        const name = (nameInput?.value || 'Player').slice(0,18);
+        try { localStorage.setItem(NAME_KEY, name); } catch {}
+        // submit to global board
+        submitGlobalScore(name, s).catch(()=>{});
       }
-             function saveScore(s) {
-         const arr = loadScores();
-         const nameInput = document.getElementById('playerName');
-         const name = (nameInput?.value || 'Player').slice(0,18);
-         try { localStorage.setItem(NAME_KEY, name); } catch {}
-         arr.push({ score: s, at: Date.now(), name });
-         arr.sort((a,b) => b.score - a.score);
-         localStorage.setItem(STORAGE_KEY, JSON.stringify(arr.slice(0, 20)));
-         // submit to global board (fire and forget)
-         submitGlobalScore(name, s).catch(()=>{});
-       }
-      function bestScore() { const arr = loadScores(); return arr.length ? arr[0].score : 0; }
+      
       async function renderScoreLists() {
-        const arr = loadScores();
-        const top = arr.slice(0, 8);
-        const asHtml = top.map((r,i) => `<div class="row"><div>#${i+1}</div><div>${r.name || 'Player'}</div><div>${r.score}</div></div>`).join('') || '<div class="row">No scores yet</div>';
-        ui.listMenu.innerHTML = '<h4>Local Highscores</h4>' + asHtml;
-        
-        // Fetch global highscores
+        // Fetch global highscores only
         try {
           const global = await fetchGlobalScores();
           let gHtml = '<div class="row">Loading global scores...</div>';
@@ -377,12 +365,10 @@
           } else {
             gHtml = '<div class="row">No global scores yet</div>';
           }
-          ui.listEnd.innerHTML = '<h4>Global Highscores</h4>' + gHtml;
+          ui.listMenu.innerHTML = '<h4>Global Highscores</h4>' + gHtml;
         } catch (error) {
-          ui.listEnd.innerHTML = '<h4>Global Highscores</h4><div class="row">Failed to load</div>';
+          ui.listMenu.innerHTML = '<h4>Global Highscores</h4><div class="row">Failed to load</div>';
         }
-        
-        ui.best.textContent = 'Best: ' + bestScore();
       }
 
       function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c])); }
@@ -773,7 +759,6 @@
       // Initial setup
       renderScoreLists();
       ui.score.textContent = '0';
-      ui.best.textContent = 'Best: ' + bestScore();
 
       // Accessibility: allow Enter to start when in menu
       document.addEventListener('keydown', e => { if (state === State.MENU && (e.key === 'Enter' || e.key === ' ')) startGame(); });
