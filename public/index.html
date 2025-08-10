@@ -457,9 +457,9 @@
         let type = 'solid';
         if (Math.random() < config.breakPlatformChance) type = 'break';
         else if (Math.random() < config.movingPlatformChance) type = 'move';
-        platforms.push({ x, y, w, type, vx: type==='move' ? rand(40, 80) * (Math.random()<.5?-1:1) : 0, broken: false, willBreak: false });
-                 // occasional rocket spawn on platform line (much rarer)
-         if (Math.random() < 0.02) addRocket(x + w/2 - 14, y - 24);
+                 platforms.push({ x, y, w, type, vx: type==='move' ? rand(40, 80) * (Math.random()<.5?-1:1) : 0, broken: false, willBreak: false });
+                  // occasional rocket spawn on platform line (much rarer)
+          if (Math.random() < 0.02) addRocket(x + w/2 - 19, y - 38);
       }
 
              // Rocket power-up
