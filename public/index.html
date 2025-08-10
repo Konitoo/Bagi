@@ -384,24 +384,7 @@
          return res.json();
        }
        
-               // Admin function to reset leaderboard (call from browser console)
-        window.resetLeaderboard = async function() {
-          try {
-            const res = await fetch(API_BASE, { 
-              method: 'POST', 
-              headers: { 'Content-Type': 'application/json' }, 
-              body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
-            });
-            if (res.ok) {
-              console.log('✅ Leaderboard reset successfully!');
-              renderScoreLists(); // Refresh the display
-            } else {
-              console.error('❌ Failed to reset leaderboard');
-            }
-          } catch (error) {
-            console.error('❌ Error resetting leaderboard:', error.message);
-          }
-        };
+
        
 
 
