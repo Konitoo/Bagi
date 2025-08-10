@@ -127,10 +127,11 @@
                 <label for="playerName" style="opacity:.9;">Name:</label>
                 <input id="playerName" type="text" maxlength="18" placeholder="Your name" style="pointer-events:auto;padding:8px 10px;border-radius:10px;border:0;background:rgba(255,255,255,.08);color:var(--fg);min-width:160px;">
               </div>
-                             <div class="btns">
-                 <button id="startBtn">Start</button>
-                 <button class="secondary" id="muteBtn">Sound On/Off</button>
-               </div>
+                                           <div class="btns">
+                <button id="startBtn">Start</button>
+                <button class="secondary" id="muteBtn">Sound On/Off</button>
+                <button class="secondary" id="resetBtn" style="background: linear-gradient(180deg, #ff6b6b, #ff5252); color: white; box-shadow: 0 6px 18px rgba(255,107,107,.32);">Reset Leaderboard</button>
+              </div>
               <div class="scores" id="scoreList"></div>
             </div>
           </div>
@@ -330,13 +331,15 @@
         again: document.getElementById('againBtn'),
         toMenu: document.getElementById('toMenuBtn'),
         resume: document.getElementById('resumeBtn'),
-                 mute: document.getElementById('muteBtn')
+        mute: document.getElementById('muteBtn'),
+        reset: document.getElementById('resetBtn')
       };
       ui.start.addEventListener('click', startGame);
       ui.again && ui.again.addEventListener('click', startGame);
       ui.toMenu && ui.toMenu.addEventListener('click', () => gotoMenu());
       ui.resume && ui.resume.addEventListener('click', () => togglePause(true));
-             ui.mute && ui.mute.addEventListener('click', () => { muted = !muted; SFX.beep(660, .03); });
+      ui.mute && ui.mute.addEventListener('click', () => { muted = !muted; SFX.beep(660, .03); });
+      ui.reset && ui.reset.addEventListener('click', resetLeaderboard);
       // Twitter button link - set your profile URL here
       const twitterBtn = document.getElementById('twitterBtn');
       if (twitterBtn) {
@@ -382,6 +385,26 @@
          const res = await fetch(API_BASE);
          if (!res.ok) return null;
          return res.json();
+       }
+       
+       async function resetLeaderboard() {
+         if (confirm('Are you sure you want to reset the global leaderboard? This cannot be undone!')) {
+           try {
+             const res = await fetch(API_BASE, { 
+               method: 'POST', 
+               headers: { 'Content-Type': 'application/json' }, 
+               body: JSON.stringify({ name: 'RESET', score: 999999999 }) 
+             });
+             if (res.ok) {
+               alert('Leaderboard reset successfully!');
+               renderScoreLists(); // Refresh the display
+             } else {
+               alert('Failed to reset leaderboard');
+             }
+           } catch (error) {
+             alert('Error resetting leaderboard: ' + error.message);
+           }
+         }
        }
        
 
@@ -523,11 +546,20 @@
         if (player.vy > 0) {
           for (const p of platforms) {
             if (p.broken) continue;
-            const px = player.x, py = player.y, pw = player.w, ph = player.h;
-            if (py + ph <= p.y && py + ph + player.vy * dt >= p.y) {
-              if (px + pw > p.x && px < p.x + p.w) {
+            
+            // Better hitbox: use bottom center of player for landing detection
+            const playerBottomCenterX = player.x + player.w / 2;
+            const playerBottomY = player.y + player.h;
+            
+            // Check if player is falling onto platform
+            if (playerBottomY <= p.y && playerBottomY + player.vy * dt >= p.y) {
+              // Check if player's bottom center is within platform bounds (with some tolerance)
+              const tolerance = 5; // pixels of tolerance
+              if (playerBottomCenterX >= p.x - tolerance && playerBottomCenterX <= p.x + p.w + tolerance) {
                 // landed
-                player.y = p.y - ph; player.vy = -config.jumpForce; SFX.beep(500 + Math.random()*60, .05);
+                player.y = p.y - player.h; 
+                player.vy = -config.jumpForce; 
+                SFX.beep(500 + Math.random()*60, .05);
                 if (p.type === 'move') player.x += p.vx * 0.02;
                 // mark break platforms to crumble right after jump
                 if (p.type === 'break') { p.willBreak = true; }
