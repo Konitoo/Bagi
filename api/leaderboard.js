@@ -1,4 +1,4 @@
-// Simple file-based leaderboard - reliable and works everywhere
+// Simple JSON-based leaderboard - reads from and writes to leaderboard.json
 import fs from 'fs';
 import path from 'path';
 
