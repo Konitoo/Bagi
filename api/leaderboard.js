@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     try {
       const { name, score } = req.body;
       
-      // Check if this is a reset request
+      // Check if this is a reset request - must be exact match
       if (name === 'RESET' && score === 999999999) {
         saveLeaderboard([]);
         console.log('Leaderboard reset successfully');
@@ -61,8 +61,8 @@ export default async function handler(req, res) {
         return;
       }
       
-      // Don't allow RESET as a real player name
-      if (name === 'RESET') {
+      // Don't allow RESET or CLEAR_ALL as real player names
+      if (name === 'RESET' || name === 'CLEAR_ALL') {
         return res.status(400).json({ error: 'Invalid name' });
       }
       
