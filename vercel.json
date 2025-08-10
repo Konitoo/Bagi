@@ -9,5 +9,7 @@
       "source": "/api/leaderboard",
       "destination": "/api/leaderboard-redis.js"
     }
-  ]
+  ],
+  "buildCommand": "echo 'No build needed'",
+  "outputDirectory": "public"
 }
